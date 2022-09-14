@@ -102,7 +102,7 @@ defmodule Cluster.Strategy do
 
         case apply(disconnect_mod, disconnect_fun, fargs) do
           true ->
-            Cluster.Logger.info(topology, "disconnected from #{inspect(n)}")
+            Cluster.Logger.warn(topology, "disconnected from #{inspect(n)}")
             acc
 
           false ->
