@@ -1,4 +1,4 @@
-defmodule Cluster.Strategy.KubernetesDNSTest do
+defmodule Cluster.Strategy.KubernetesDNSConnectOnlyTest do
   @moduledoc false
 
   use ExUnit.Case, async: true
@@ -29,14 +29,14 @@ defmodule Cluster.Strategy.KubernetesDNSTest do
             list_nodes: {Nodes, :list_nodes, [[]]}
           }
         ]
-        |> DNS.start_link()
+        |> DNS.ConnectOnly.start_link()
 
         assert_receive {:connect, :"node@10.0.0.1"}, 100
         assert_receive {:connect, :"node@10.0.0.2"}, 100
       end)
     end
 
-    test "removes nodes" do
+    test "node not returned by DNS resolver is not disconnected" do
       capture_log(fn ->
         [
           %State{
@@ -53,9 +53,9 @@ defmodule Cluster.Strategy.KubernetesDNSTest do
             meta: MapSet.new([:"node@10.0.0.1", :"node@10.0.0.2"])
           }
         ]
-        |> DNS.start_link()
+        |> DNS.ConnectOnly.start_link()
 
-        assert_receive {:disconnect, :"node@10.0.0.2"}, 100
+        refute_receive {:disconnect, :"node@10.0.0.2"}, 100
       end)
     end
 
@@ -76,7 +76,7 @@ defmodule Cluster.Strategy.KubernetesDNSTest do
             meta: MapSet.new([:"node@10.0.0.1"])
           }
         ]
-        |> DNS.start_link()
+        |> DNS.ConnectOnly.start_link()
 
         refute_receive {:disconnect, _}, 100
         refute_receive {:connect, _}, 100
@@ -99,7 +99,7 @@ defmodule Cluster.Strategy.KubernetesDNSTest do
             list_nodes: {Nodes, :list_nodes, [[]]}
           }
         ]
-        |> DNS.start_link()
+        |> DNS.ConnectOnly.start_link()
 
         refute_receive {:connect, _}, 100
         refute_receive {:disconnect, _}, 100
